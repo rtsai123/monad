@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include <category/async/concepts.hpp>
 #include <category/async/config.hpp>
 #include <category/async/connected_operation.hpp>
@@ -30,7 +29,6 @@
 
 #include <category/core/test_util/gtest_signal_stacktrace_printer.hpp> // NOLINT
 
-#include <csignal>
 #include <cstddef>
 #include <iostream>
 #include <memory>
@@ -44,7 +42,7 @@ namespace
         monad::async::storage_pool pool(
             monad::async::use_anonymous_inode_tag{});
         monad::io::Ring testring1;
-        monad::io::Ring testring2(1);
+        monad::io::Ring testring2(monad::io::RingConfig{1});
         monad::io::Buffers testrwbuf = make_buffers_for_segregated_read_write(
             testring1,
             testring2,

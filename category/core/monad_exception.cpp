@@ -13,21 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <category/core/backtrace.hpp>
+#include <category/core/config.hpp>
 #include <category/core/monad_exception.hpp>
 
-#include <cstdio>
+#include <cstddef>
+#include <cstdlib>
 #include <cstring>
+#include <stdio.h>
 
-extern char const *__progname;
+extern char const *__progname; // NOLINT(bugprone-reserved-identifier)
 
 MONAD_NAMESPACE_BEGIN
 
 MonadException::MonadException(
-    char const *const message,
-    char const *const expr,
-    char const *const function,
-    char const *const file,
-    long const line)
+    char const *const message, char const *const expr,
+    char const *const function, char const *const file, long const line)
     : expr_{expr}
     , function_{function}
     , file_{file}
@@ -35,9 +36,9 @@ MonadException::MonadException(
     , stack_trace_buffer_{std::malloc(stack_trace_buffer_size)}
 {
     if (stack_trace_buffer_) {
-        stack_trace_ = stack_backtrace::capture({
-            reinterpret_cast<std::byte *>(stack_trace_buffer_),
-            stack_trace_buffer_size});
+        stack_trace_ = stack_backtrace::capture(
+            {reinterpret_cast<std::byte *>(stack_trace_buffer_),
+             stack_trace_buffer_size});
     }
     (void)std::strncpy(message_, message, message_buffer_size - 1);
     message_[message_buffer_size - 1] = '\0';

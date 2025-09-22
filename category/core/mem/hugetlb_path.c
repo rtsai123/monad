@@ -13,21 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <fcntl.h>
-#include <limits.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <category/core/cleanup.h> // NOLINT(misc-include-cleaner)
+#include <category/core/format_err.h>
+#include <category/core/mem/hugetlb_path.h>
+#include <category/core/srcloc.h>
 
 #include <hugetlbfs.h>
 
-#include <category/core/cleanup.h>
-#include <category/core/format_err.h>
-#include <category/core/srcloc.h>
-#include <category/core/mem/hugetlb_path.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <linux/limits.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 thread_local char g_error_buf[PATH_MAX];
 
@@ -67,6 +68,7 @@ static int walk_path_suffix(
     char const *path_suffix, bool create_dirs, mode_t mode, int *curfd,
     char const *const namebuf_start, char *namebuf, size_t namebuf_size)
 {
+    // NOLINTBEGIN(clang-analyzer-unix.Malloc)
     int rc = 0;
     char *dir_name;
     char *tokctx;
@@ -101,7 +103,8 @@ static int walk_path_suffix(
         // e.g., in `/a/b/c/d` if `c` exists but is not a directory we'll get
         // ENOTDIR with the error string indicating that it occured for path
         // component `c` at `/a/b`
-        int nextfd, lastfd;
+        int nextfd;
+        int lastfd;
         if (create_dirs && mkdirat(*curfd, dir_name, mode) == -1 &&
             errno != EEXIST) {
             rc = FORMAT_ERRC(
@@ -132,6 +135,7 @@ Error:
     (void)close(*curfd);
     *curfd = -1;
     return rc;
+    // NOLINTEND(clang-analyzer-unix.Malloc)
 }
 
 int monad_hugetlbfs_open_dir_fd(
@@ -169,6 +173,9 @@ int monad_hugetlbfs_open_dir_fd(
     }
     rc = path_append(
         &namebuf, hugetlbfs_mount_path, &namebuf_size, /*prepend_sep*/ false);
+    if (rc) {
+        return rc;
+    }
     curfd = open(hugetlbfs_mount_path, O_DIRECTORY | O_PATH);
     if (curfd == -1) {
         return FORMAT_ERRC(

@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 
 #include <cstring>
+#include <sys/types.h>
 #include <unistd.h>
 
 using namespace monad;
@@ -28,7 +29,8 @@ namespace
     {
         try {
             MONAD_ASSERT_THROW(false, "");
-        } catch (MonadException const &e) {
+        }
+        catch (MonadException const &e) {
             ASSERT_TRUE(std::strcmp(e.message(), "") == 0);
             return;
         }
@@ -44,7 +46,8 @@ namespace
         message[MonadException::message_buffer_size - 1] = '\0';
         try {
             MONAD_ASSERT_THROW(false, message);
-        } catch (MonadException const &e) {
+        }
+        catch (MonadException const &e) {
             ASSERT_TRUE(std::strcmp(e.message(), message) == 0);
             return;
         }
@@ -60,7 +63,8 @@ namespace
         message[MonadException::message_buffer_size] = '\0';
         try {
             MONAD_ASSERT_THROW(false, message);
-        } catch (MonadException const &e) {
+        }
+        catch (MonadException const &e) {
             message[MonadException::message_buffer_size - 1] = '\0';
             ASSERT_TRUE(std::strcmp(e.message(), message) == 0);
             return;
@@ -72,9 +76,10 @@ namespace
     {
         try {
             MONAD_ASSERT_THROW(false, "hello world");
-        } catch (MonadException const &e) {
+        }
+        catch (MonadException const &e) {
             int fds[2];
-            int r = ::pipe(fds);
+            int const r = ::pipe(fds);
             ASSERT_NE(r, -1);
 
             e.print(fds[1]);

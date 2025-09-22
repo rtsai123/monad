@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <category/core/config.hpp>
 #include <category/core/assert.h>
 #include <category/core/basic_formatter.hpp>
+#include <category/core/config.hpp>
 #include <category/core/likely.h>
 #include <category/execution/ethereum/trace/call_frame.hpp>
 
@@ -47,7 +47,7 @@ nlohmann::json to_json(CallFrame const &f)
 {
     nlohmann::json res{};
     res["type"] = call_kind_to_string(f.type);
-    if (MONAD_UNLIKELY(f.type == CallType::CALL && f.flags == EVMC_STATIC)) {
+    if (MONAD_UNLIKELY(f.type == CallType::CALL && (f.flags & EVMC_STATIC))) {
         res["type"] = "STATICCALL";
     }
     res["from"] = fmt::format(

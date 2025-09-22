@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <ctype.h>
 #include <errno.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +23,9 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <linux/magic.h>
+#include <stdint.h>
 #include <sys/stat.h>
+#include <sys/statfs.h>
 #include <sys/types.h>
 #include <sys/vfs.h>
 #include <unistd.h>
@@ -31,6 +33,7 @@
 #include <category/core/event/event_ring.h>
 #include <category/core/event/event_ring_util.h>
 #include <category/core/format_err.h>
+#include <category/core/srcloc.h>
 
 #if !MONAD_EVENT_DISABLE_LIBHUGETLBFS
     #include <category/core/mem/hugetlb_path.h>
@@ -126,7 +129,8 @@ static bool is_writer_fd(ino_t ring_ino, int fdinfo_entry)
 
     read_buf[n_read] = '\0'; // In case of a short read
     while ((line = strsep(&scan, "\n"))) {
-        char *key, *value = nullptr;
+        char *key = nullptr;
+        char *value = nullptr;
         key = strsep(&line, FDINFO_DELIM);
         while (line != nullptr) {
             value = strsep(&line, FDINFO_DELIM);
@@ -296,7 +300,7 @@ int monad_check_path_supports_map_hugetlb(char const *path, bool *supported)
 
     *supported = false;
     rc = find_existing_parent_path(path, &parent_path);
-    if (rc != 0) {
+    if (rc != 0 || parent_path == nullptr) {
         goto Done;
     }
     if (statfs(parent_path, &fs_stat) == -1) {

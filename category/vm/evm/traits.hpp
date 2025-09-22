@@ -33,6 +33,7 @@ namespace monad
 
         // Feature flags
         { T::eip_2929_active() } -> std::same_as<bool>;
+        { T::eip_4844_active() } -> std::same_as<bool>;
         { T::eip_7951_active() } -> std::same_as<bool>;
         { T::can_create_inside_delegated() } -> std::same_as<bool>;
 
@@ -47,6 +48,7 @@ namespace monad
         // Constants
         { T::cold_account_cost() } -> std::same_as<int64_t>;
         { T::cold_storage_cost() } -> std::same_as<int64_t>;
+        { T::code_deposit_cost() } -> std::same_as<int64_t>;
 
         // Instead of storing a revision, caches should identify revision
         // changes by storing the opaque value returned by this method. No
@@ -72,6 +74,11 @@ namespace monad
         static constexpr bool eip_2929_active() noexcept
         {
             return Rev >= EVMC_BERLIN;
+        }
+
+        static constexpr bool eip_4844_active() noexcept
+        {
+            return Rev >= EVMC_CANCUN;
         }
 
         static constexpr bool eip_7951_active() noexcept
@@ -119,6 +126,11 @@ namespace monad
             std::unreachable();
         }
 
+        static constexpr int64_t code_deposit_cost() noexcept
+        {
+            return 200;
+        }
+
         static constexpr uint64_t id() noexcept
         {
             return static_cast<uint64_t>(Rev);
@@ -145,6 +157,14 @@ namespace monad
         static constexpr bool eip_2929_active() noexcept
         {
             return evm_rev() >= EVMC_BERLIN;
+        }
+
+        static constexpr bool eip_4844_active() noexcept
+        {
+            // if this EIP is ever enabled, reserve balance must be modified
+            // such that execution (and consensus) is accounting for the blob
+            // gas used (irrevocable) in the reserve balance calculation
+            return false;
         }
 
         static constexpr bool eip_7951_active() noexcept
@@ -198,6 +218,15 @@ namespace monad
             }
 
             std::unreachable();
+        }
+
+        static constexpr int64_t code_deposit_cost() noexcept
+        {
+            if constexpr (monad_pricing_version() >= 1) {
+                return 1200;
+            }
+
+            return 200;
         }
 
         static constexpr uint64_t id() noexcept
