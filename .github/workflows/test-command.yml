@@ -7,7 +7,7 @@ on:
 jobs:
   check-command:
     if: github.event.issue.pull_request && contains(github.event.comment.body, '/test all')
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       triggered: ${{ steps.check.outputs.triggered }}
     steps:
@@ -65,7 +65,7 @@ jobs:
   run-tests:
     needs: check-command
     if: needs.check-command.outputs.triggered == 'true'
-    runs-on: ubuntu-24.04-32
+    runs-on: self-hosted
     strategy:
       matrix:
         build:
@@ -219,7 +219,7 @@ jobs:
   run-fuzz-tests:
     needs: check-command
     if: needs.check-command.outputs.triggered == 'true'
-    runs-on: ubuntu-24.04-32
+    runs-on: self-hosted
     steps:
       - name: Get PR details
         id: pr
