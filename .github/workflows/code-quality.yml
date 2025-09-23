@@ -11,7 +11,7 @@ concurrency:
 jobs:
   formatting-check:
     name: Check clang-format
-    runs-on: self-hosted
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -23,7 +23,7 @@ jobs:
 
   clang-tidy:
     name: Check clang-tidy
-    runs-on: self-hosted
+    runs-on: ubuntu-24.04-32
     steps:
         - name: Generate token
           id: generate_token
